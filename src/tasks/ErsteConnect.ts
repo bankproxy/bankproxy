@@ -112,20 +112,24 @@ export default class extends TaskBaseBerlin {
       payments.map((payment) => payment.debtorAccount.iban)
     );
 
-    const list = await Promise.all(
-      payments.map(async (payment) => {
-        await this.pisPOST("/v1/payments/sepa-credit-transfers", payment);
-        return [
-          this.json._links.scaRedirect.href,
-          `${payment.creditorName} (${payment.instructedAmount.amount})`,
-        ];
-      })
-    );
+    const list = [];
+    const paymentIds = [];
+    for (const payment of payments) {
+      await this.pisPOST("/v1/payments/sepa-credit-transfers", payment);
+      list.push([
+        this.json._links.scaRedirect.href,
+        `${payment.creditorName} (${payment.instructedAmount.amount})`,
+      ]);
+      paymentIds.push(this.json.paymentId);
+    }
+
+    await this.pisPOST("/v1/signing-baskets", { paymentIds });
 
     await this.prompt("Initiate payments", "Done", (_) => {
       list.forEach(([url, name]) => {
         _.link(url, name);
       });
+      _.link(this.json._links.scaRedirect.href, "Sign All Payments");
     });
   }
 
