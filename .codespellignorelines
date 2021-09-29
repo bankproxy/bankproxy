@@ -1,0 +1,1 @@
+    await this.click(`.produkt[data-produktnr="${accountDetails.info}"]`);

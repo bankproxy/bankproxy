@@ -1,0 +1,8 @@
+/.nyc_output
+/coverage
+/coverage_reports
+/docs/.vuepress/dist
+/docs/.vuepress/public/api
+/node_modules
+/result-*
+/tests/cypress/videos

@@ -1,0 +1,12 @@
+/.codespell*
+/.dockerignore
+/.git
+/.gitignore
+/.nyc_output
+/coverage
+/coverage_reports
+/Dockerfile
+/docs
+/node_modules
+/result-*
+/tests

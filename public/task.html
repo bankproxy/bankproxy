@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <style>
+    body {
+      background: #ccc;
+      font-family: sans-serif;
+    }
+
+    .spinner {
+      display: block;
+      width: 80px;
+      height: 7em;
+      margin: 0 auto;
+    }
+    .spinner:after {
+      content: " ";
+      display: block;
+      width: 5em;
+      height: 5em;
+      border-radius: 50%;
+      border: 0.7em solid #888;
+      border-color: #888 transparent #888 transparent;
+      animation: spinner 1.2s linear infinite;
+    }
+    @keyframes spinner {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #main {
+      width: 360px;
+      padding: 5% 0 0;
+      margin: auto;
+    }
+    form {
+      background: #fff;
+      position: relative;
+      max-width: 360px;
+      margin: 0 auto 100px;
+      padding: 45px;
+      box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+    }
+    p {
+      text-align: center;
+    }
+    input {
+      outline: 0;
+      background: #eee;
+      width: 100%;
+      border: 0;
+      margin: 0 0 15px;
+      padding: 15px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .button {
+      outline: 0;
+      background: #4caf50;
+      width: 100%;
+      border: 0;
+      padding: 15px;
+      color: #ffffff;
+      font-size: 14px;
+      -webkit-transition: all 10.3 ease;
+      transition: all 10.3 ease;
+      cursor: pointer;
+    }
+    .button:hover,
+    .button:active,
+    .button:focus {
+      background: #43a047;
+    }
+  </style>
+
+  <body>
+    <div id="main">
+      <form id="form">
+        <div class="spinner"></div>
+      </form>
+    </div>
+
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        const store = window.localStorage;
+        const url = location.href.replace(/^http/, "ws");
+
+        function ce(tag, fn) {
+          const ret = document.createElement(tag);
+          fn(ret);
+          return ret;
+        }
+
+        function sl(lines) {
+          const form = document.querySelector("form");
+          while (form.firstChild) form.removeChild(form.lastChild);
+
+          lines
+            .map((line) => {
+              switch (line.type) {
+                case "spinner":
+                  return ce("div", (ele) => ele.classList.add("spinner"));
+                case "text":
+                  return ce("p", (ele) => (ele.innerText = line.text));
+                case "input":
+                  return ce("label", (ele) => {
+                    ele.appendChild(document.createTextNode(line.label));
+                    ele.appendChild(
+                      ce("input", (ele) => {
+                        ele.name = line.name;
+                        if (line.value) ele.value = line.value;
+                      })
+                    );
+                  });
+                case "password":
+                  return ce("label", (ele) => {
+                    ele.appendChild(document.createTextNode(line.label));
+                    ele.appendChild(
+                      ce("input", (ele) => {
+                        ele.type = "password";
+                        ele.name = line.name;
+                        if (line.value) ele.value = line.value;
+                      })
+                    );
+                  });
+                case "checkbox":
+                  return ce("label", (ele) => {
+                    ele.appendChild(document.createTextNode(line.label));
+                    ele.appendChild(
+                      ce("input", (ele) => {
+                        ele.type = "checkbox";
+                        ele.name = line.name;
+                        if (line.value) ele.value = line.value;
+                      })
+                    );
+                  });
+                case "submit":
+                  return ce("input", (ele) => {
+                    ele.type = "submit";
+                    ele.classList.add("button");
+                    if (line.text) ele.value = line.text;
+                  });
+                case "link":
+                  return ce("input", (ele) => {
+                    ele.type = "button";
+                    ele.classList.add("button");
+                    ele.value = line.text;
+                    ele.addEventListener("click", () => {
+                      window.open(line.url);
+                    });
+                  });
+                default:
+              }
+            })
+            .forEach((child) => child && form.appendChild(child));
+        }
+
+        let redirecting = false;
+        const ws = new WebSocket(url, ["t"]);
+        function wsSend(obj) {
+          return ws.send(JSON.stringify(obj));
+        }
+
+        ws.addEventListener("message", (msg) => {
+          const obj = JSON.parse(msg.data);
+          if ("get" in obj) {
+            const { key } = obj.get;
+            wsSend({ get: { [key]: store.getItem(key) } });
+          }
+          if ("set" in obj) {
+            store.setItem(obj.set.key, obj.set.value);
+          }
+          if ("redirect" in obj) {
+            sl([{ type: "text", text: `REDIRECTING... please wait...` }]);
+            redirecting = true;
+            location.replace(obj.redirect);
+          }
+          if ("content" in obj) {
+            sl(obj.content);
+          }
+        });
+        ws.addEventListener("close", (ev) => {
+          if (redirecting) return;
+          sl([{ type: "text", text: `CLOSED (${ev.code}): ${ev.reason}` }]);
+        });
+
+        document.getElementById("form").addEventListener("submit", (e) => {
+          const fd = new FormData(e.srcElement);
+          const data = {};
+
+          for (const [key, value] of fd.entries()) {
+            data[key] = value;
+          }
+
+          wsSend({ form: data });
+
+          e.preventDefault();
+        });
+
+        window.addEventListener("message", (event) => {
+          if (event.origin !== window.origin) return;
+          wsSend({ callback: event.data });
+        });
+      });
+    </script>
+  </body>
+</html>

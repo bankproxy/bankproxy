@@ -1,0 +1,27 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '15'
+    - run: npm install
+    - run: npm run docs
+    - uses: JamesIves/github-pages-deploy-action@4.1.5
+      with:
+        branch: docs
+        folder: docs/.vuepress/dist
+        repository-name: bankproxy/bankproxy.github.io
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
+      if: github.event_name != 'pull_request'

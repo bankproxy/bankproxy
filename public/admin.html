@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<h1>BankBroxy Admin</h1>
+<a href="/admin/authorize">Authorize</a>
+<div style="visibility: hidden">
+  <h2>Delete</h2>
+  <ul></ul>
+  <h2>Create</h2>
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" />
+  <label for="type">Type:</label>
+  <select id="type" name="type">
+    <option></option>
+  </select>
+  <p></p>
+  <form></form>
+  <button>Create</button><br />
+  <code></code>
+</div>
+<script type="text/javascript">
+  const map = new Map(
+    location.hash
+      .substr(1)
+      .split("&")
+      .map((i) => i.split("=").map((j) => decodeURIComponent(j)))
+  );
+  const idToken = map.get("id_token");
+
+  if (idToken) document.querySelector("div").style.visibility = "";
+  const authorization = "Bearer " + idToken;
+
+  async function loadConnectors() {
+    const res = await fetch("/admin/api/connectors", {
+      headers: {
+        authorization,
+      },
+    });
+    const json = await res.json();
+
+    const map = new Map(json.map(({ id, configs }) => [id, configs]));
+
+    const select = document.querySelector("select");
+    [...map.keys()].sort().forEach((key) => {
+      const option = document.createElement("option");
+      option.text = key;
+      select.appendChild(option);
+    });
+
+    select.addEventListener("change", () => {
+      const configs = map.get(select.value) || [];
+
+      const form = document.querySelector("form");
+      while (form.firstChild) form.removeChild(form.firstChild);
+
+      configs.sort().forEach((name) => {
+        const label = document.createElement("label");
+        label.innerText = `${name}:`;
+        form.appendChild(label);
+        form.appendChild(document.createElement("br"));
+
+        const textarea = document.createElement("textarea");
+        textarea.name = name;
+        textarea.cols = 100;
+        textarea.rows = 5;
+        form.appendChild(textarea);
+        form.appendChild(document.createElement("br"));
+      });
+    });
+  }
+
+  async function loadItems() {
+    const res = await fetch("/admin/api/connections", {
+      headers: {
+        authorization,
+      },
+    });
+    const json = await res.json();
+
+    const ul = document.querySelector("ul");
+    while (ul.firstChild) ul.removeChild(ul.lastChild);
+    json.forEach((item) => {
+      const name = item.name || item.credentials.clientId;
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#";
+      a.innerText = name;
+      li.appendChild(a);
+      ul.appendChild(li);
+      a.addEventListener("click", async () => {
+        const ok = confirm(`Do you want to delete ${name}?`);
+        if (!ok) return;
+        await fetch("/admin/api/connections", {
+          method: "DELETE",
+          headers: {
+            authorization,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            credentials: item.credentials,
+          }),
+        });
+        await loadItems();
+      });
+    });
+  }
+
+  if (idToken) {
+    window.addEventListener("load", loadConnectors);
+    window.addEventListener("load", loadItems);
+  }
+
+  document.querySelector("button").addEventListener("click", async () => {
+    const formData = new FormData(document.querySelector("form"));
+    const body = JSON.stringify({
+      type: document.querySelector("#type").value,
+      name: document.querySelector("#name").value,
+      config: Object.fromEntries(formData),
+    });
+    const res = await fetch("/admin/api/connections", {
+      method: "POST",
+      headers: {
+        authorization,
+        "Content-Type": "application/json",
+      },
+      body,
+    });
+
+    let code = await res.text();
+    try {
+      const { credentials } = JSON.parse(code);
+      if (credentials) {
+        const { clientId, clientSecret } = credentials;
+        if (clientId && clientSecret) {
+          code += "<p>Authorization: Basic ";
+          code += btoa(clientId + ":" + clientSecret);
+        }
+      }
+    } catch (e) {}
+    document.querySelector("code").innerHTML = code;
+    await loadItems();
+  });
+
+  if (map) console.dir(idToken);
+</script>

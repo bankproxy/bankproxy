@@ -1,0 +1,7 @@
+[codespell]
+check-filenames =
+count =
+exclude-file = .codespellignorelines
+quiet-level = 2
+skip = ./.git,./coverage,./docs/.vuepress/dist,./docs/.vuepress/public,./docs/psd2-api.yaml,./node_modules,./package-lock.json
+context = 3

@@ -1,0 +1,466 @@
+openapi: "3.1.0"
+info:
+  title: BankProxy API
+  license:
+    name: GNU Affero General Public License 3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+  version: 0.9.0
+paths:
+  /:
+    post:
+      summary: Trigger a transaction
+      tags:
+        - transaction
+      description: |
+        This is the central API endpoint get transactions from the bank and initiate payments. It supports two different modes of operation.
+
+        ### Redirect mode
+
+        In this mode the API call will return only a URL. The end-user opening this URL, will be presented with the required steps to get the transactions from the bank and redirected to the previously provided `callbackUri`.
+
+
+        To trigger this mode `callbackUri` must be provided in the request body.
+
+        ### Headless mode
+
+        This optional mode does not require any end-user interaction and can therefore used for automatic pariodic execution. If this mode is supported depends on how bankproxy interacts with the bank.
+      requestBody:
+        content:
+          application/json:
+            examples:
+              minimal:
+                description: For the most simple request only the IBAN of the bank account is required.
+                value:
+                  accounts:
+                  - iban: AT251657674147449499
+              multiple accounts:
+                description: Multiple accounts can be imported by providing multiple objects via `accounts`.
+                value:
+                  accounts:
+                  - iban: AT251657674147449499
+                  - iban: CH9300762011623852957
+                  - iban: DE72957284895783674747
+              payment:
+                description: To initiate a payment, the `payments` property can be used.
+                value:
+                  accounts:
+                  - iban: AT251657674147449499
+                  payments:
+                    sepaCreditTransferPayments:
+                    - instructedAmount:
+                        currency: "EUR"
+                        amount: "123.50"
+                      debtorAccount:
+                        iban: AT251657674147449499
+                      creditorName: Merchant123
+                      creditorAccount:
+                        iban: DE02100100109307118603
+                      remittanceInformationUnstructured: Ref Number Merchant
+              delta import with entryReferenceFrom:
+                description: |
+                  To request only transaction since a previous execution, it's possible to provide `entryReferenceFrom` in addition to the IBAN. This must equal the `entryReference` of a transaction.
+
+
+                  **Since not all banks support `entryReferenceFrom`, it's recommended to also add at least `dateFrom`.**
+                value:
+                  accounts:
+                  - iban: AT251657674147449499
+                    entryReferenceFrom: X3648793450370305937
+              delta import with date:
+                description: To request transaction in a specific date range, it's possible to provide `dateFrom` and `dateTo` in addition to the IBAN.
+                value:
+                  accounts:
+                  - iban: AT251657674147449499
+                    dateFrom: "2020-01-01"
+                    dateTo: "9999-12-31"
+              recommended delta import:
+                description: The recommended way for delta import is to provide `entryReferenceFrom`, `dateFrom` and `dateTo`. See the other examples for more details about the specific properties.
+                value:
+                  accounts:
+                  - iban: AT251657674147449499
+                    dateFrom: "2020-01-01"
+                    dateTo: "9999-12-31"
+                    entryReferenceFrom: X3648793450370305937
+              delta import with payments:
+                description: See the other examples for more details about the specific properties.
+                value:
+                  accounts:
+                  - iban: AT251657674147449499
+                    dateFrom: "2020-01-01"
+                    dateTo: "9999-12-31"
+                    entryReferenceFrom: X3648793450370305937
+                  payments:
+                    sepaCreditTransferPayments:
+                    - instructedAmount:
+                        currency: "EUR"
+                        amount: "123.50"
+                      debtorAccount:
+                        iban: AT251657674147449499
+                      creditorName: Merchant123
+                      creditorAccount:
+                        iban: DE02100100109307118603
+                      remittanceInformationUnstructured: Ref Number Merchant
+                    - instructedAmount:
+                        currency: "EUR"
+                        amount: "45.90"
+                      debtorAccount:
+                        iban: AT251657674147449499
+                      creditorName: Other Merchant
+                      creditorAccount:
+                        iban: FR7612345987650123456789014
+                      remittanceInformationUnstructured: Invoice 78342
+            schema:
+              type: object
+              required:
+                - accounts
+              properties:
+                callbackUri:
+                  description: The URI the end-user will be redirected to, after interacting with the bank. If this property is not given, the call works in headless mode.
+                  type: string
+                  format: url
+                accounts:
+                  type: array
+                  required:
+                    - iban
+                  items:
+                    type: object
+                    properties:
+                      iban:
+                        $ref: "psd2-api.yaml#/components/schemas/iban"
+                      dateFrom:
+                        description: Starting date (inclusive the date `dateFrom`) of the transaction list, mandated if no delta access is required.
+                        type: string
+                        format: date
+                      dateTo:
+                        description: End date (inclusive the date `dateTo`) of the transaction list. Might be ignored if a delta function is used.
+                        type: string
+                        format: date
+                      entryReferenceFrom:
+                        description: This property indicates that the caller is in favour to get all transactions after the transaction with identification `entryReferenceFrom` alternatively to the above defined period. This is a implementation of a delta access. If this data element is contained, the entries `dateFrom` and `dateTo` might be ignored if a delta report is supported.
+                        type: string
+                payments:
+                  type: object
+                  properties:
+                    sepaCreditTransferPayments:
+                      type: array
+                      items:
+                        $ref: "psd2-api.yaml#/components/schemas/paymentInitiation_json"
+                user:
+                  description: Identifier of the user triggering the execution
+                  type: string
+                reconfigure:
+                  description: Show UI to configure the connection, even if already configured
+                  type: boolean
+                language:
+                  description: List of preferred language tags as defined in [RFC 5646](https://tools.ietf.org/html/rfc5646)
+                  type: array
+                  items:
+                    type: string
+                    format: lang
+      responses:
+        200:
+          description: Task result (headless mode)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResult"
+        302:
+          description: Created task (redirect mode)
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: Address to redirect the end-user to
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - basicAuth: []
+  /admin/api/connectors:
+    get:
+      summary: Get list of supported connectors
+      tags:
+        - admin
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - clientId
+                    - clientSecret
+                  properties:
+                    id:
+                      description: Identifier of the connector
+                      type: string
+                      example: com.example.id
+                    config:
+                      description: Supported config options for the connector
+                      type: array
+                      items:
+                        type: string
+                        example: IBAN
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwtAuth: []
+  /admin/api/connections:
+    get:
+      summary: Get list of created connection
+      tags:
+        - admin
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - credentials
+                    - type
+                  properties:
+                    credentials:
+                      type: object
+                      required:
+                        - clientId
+                      properties:
+                        clientId:
+                          description: Identifier of the connection
+                          type: string
+                          example: d16e3a54e269775b55183304a945bb30
+                    type:
+                      description: Type of the connection
+                      type: string
+                      example: com.example.id
+                    name:
+                      description: Name of the connection
+                      type: string
+                      example: Demo Bank Connection
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwtAuth: []
+    post:
+      summary: Create a new connection
+      tags:
+        - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - config
+              properties:
+                type:
+                  description: Identifier of the connector
+                  type: string
+                  example: com.example.id
+                name:
+                  description: Name for the connection
+                  type: string
+                  example: Demo Bank Connection
+                config:
+                  description: Connector specific options
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - credentials
+                properties:
+                  credentials:
+                    type: object
+                    required:
+                      - clientId
+                      - clientSecret
+                    properties:
+                      clientId:
+                        type: string
+                        example: d16e3a54e269775b55183304a945bb30
+                      clientSecret:
+                        type: string
+                        example: af7b260edd5c31ff2753b95214c858ee
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwtAuth: []
+    put:
+      summary: Update a connection
+      tags:
+        - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - credentials
+                - config
+              properties:
+                credentials:
+                  type: object
+                  required:
+                    - clientId
+                    - clientSecret
+                  properties:
+                    clientId:
+                      type: string
+                      example: d16e3a54e269775b55183304a945bb30
+                    clientSecret:
+                      type: string
+                      example: af7b260edd5c31ff2753b95214c858ee
+                name:
+                  description: Name of the connection
+                  type: string
+                  example: Demo Bank Connection
+                config:
+                  description: Connector specific options
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwtAuth: []
+    delete:
+      summary: Delete a connection
+      tags:
+        - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - credentials
+              properties:
+                credentials:
+                  type: object
+                  required:
+                    - clientId
+                  properties:
+                    clientId:
+                      type: string
+                      example: d16e3a54e269775b55183304a945bb30
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwtAuth: []
+components:
+  schemas:
+    Pet:
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        tag:
+          type: string
+    Pets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Pet"
+    Error:
+      properties:
+        message:
+          type: string
+
+    TaskResult:
+      description: Body of the JSON response for a successful read transaction list request.
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            properties:
+              account:
+                type: object
+                properties:
+                  iban:
+                    $ref: "psd2-api.yaml#/components/schemas/iban"
+              balances:
+                $ref: "psd2-api.yaml#/components/schemas/balanceList"
+              transactions:
+                type: object
+                properties:
+                  booked:
+                    $ref: "psd2-api.yaml#/components/schemas/transactionList"
+                  pending:
+                    $ref: "psd2-api.yaml#/components/schemas/transactionList"
+                  information:
+                    $ref: "psd2-api.yaml#/components/schemas/transactionList"
+
+  securitySchemes:
+    basicAuth:
+      description: |
+        This authentication scheme is used for endpoints interacting with the bank.
+      type: http
+      scheme: basic
+    jwtAuth:
+      description: |
+        This authentication scheme is used for the admin interface.
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - basicAuth: []
+  - jwtAuth: []
