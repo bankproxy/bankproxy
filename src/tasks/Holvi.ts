@@ -3,6 +3,7 @@ import {
   SepaCreditTransferPayment,
   Transaction,
 } from "../Types";
+import { LoginError } from "../Errors";
 import TaskBaseHttp from "../TaskBaseHttp";
 
 const PAGE_SIZE = 25;
@@ -35,7 +36,7 @@ export default class extends TaskBaseHttp {
   override async login() {
     const [email, password] = this.auth;
 
-    const { idToken, path } = await this.#authPost(
+    const { error, idToken, path } = await this.#authPost(
       "/auth-proxy/login/usernamepassword/",
       {
         client_id: "yIO3banxfsiuQSMrVg7x2LoKAqYKazRV",
@@ -45,6 +46,7 @@ export default class extends TaskBaseHttp {
         password,
       }
     );
+    if (error) throw new LoginError(error);
     this.setBearerAuthorization(idToken);
 
     if (!path) return;
@@ -209,9 +211,10 @@ export default class extends TaskBaseHttp {
   async #authPost(uri: string, data?: any) {
     await this.postJSON(uri, data);
 
+    const error = this.json.error;
     const idToken = this.json.id_token;
     const tft = this.json.token_meta?.twofactor_token;
-    if (!tft) return { idToken };
+    if (!tft) return { error, idToken };
 
     const path = `/auth-proxy/2fa/v1/token/${tft.id}/`;
     await this.withBearerAuthorization(idToken, () =>
@@ -220,7 +223,7 @@ export default class extends TaskBaseHttp {
         return this.json.state === "activated";
       })
     );
-    return { idToken, path };
+    return { error, idToken, path };
   }
 
   async #ibanBic(iban: string) {

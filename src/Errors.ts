@@ -19,6 +19,7 @@ export class NotFoundError extends Error {
 export class NotImplementedError extends Error {
   public readonly statusCode = 501;
 }
+export class LoginError extends ForbiddenError {}
 export class MissingConfigurationError extends Error {
   constructor(name: string) {
     super(`Missing configuration: ${name}`);

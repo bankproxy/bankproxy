@@ -1,4 +1,5 @@
 import { AccountDetails, Transaction } from "../Types";
+import { LoginError } from "../Errors";
 import TaskBaseCheerio from "../TaskBaseCheerio";
 import { publicRsaEncryptUpperHex } from "../Utilities";
 
@@ -46,6 +47,9 @@ export default class extends TaskBaseCheerio {
     });
 
     const page = this.page;
+    const error = page.text("#error");
+    if (error) throw new LoginError(error);
+
     const commontext = page.text(".commontext > b:last-of-type");
     const map = page.formElements("#credentials");
     if (map) {

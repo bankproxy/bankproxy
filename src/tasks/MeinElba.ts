@@ -3,9 +3,9 @@ import {
   SepaCreditTransferPayment,
   Transaction,
 } from "../Types";
+import { LoginError, UnsupportedTypeError } from "../Errors";
 import { ifDefined, randomHexBytesAsync, sha256hexdigest } from "../Utilities";
 import TaskBaseCheerio from "../TaskBaseCheerio";
-import { UnsupportedTypeError } from "../Errors";
 
 function toAmount({ amount, currency }) {
   return {
@@ -75,6 +75,8 @@ export default class extends TaskBaseCheerio {
     await this.loginApiPOST(`/identify/${verfuegerNr}/pin`, {
       pinHash,
     });
+
+    if (this.json.code) throw new LoginError(this.json.message);
 
     const challengeType = this.json.challengeType;
     if (challengeType == "PUSH") {
