@@ -91,6 +91,20 @@ export default abstract class extends TaskBaseImpl {
     body?: any,
     asJSON?: boolean
   ): Promise<any> {
+    this.#lastHttpsClientResponse = await this.request(
+      method,
+      url,
+      body,
+      asJSON
+    );
+  }
+
+  async request(
+    method: "DELETE" | "GET" | "POST" | "PUT",
+    url: string,
+    body?: any,
+    asJSON?: boolean
+  ) {
     if (url[0] === "/") url = this.baseUrl + url;
     const options = {
       method,
@@ -127,7 +141,6 @@ export default abstract class extends TaskBaseImpl {
     this.addRequestHeaders(options.headers, method);
 
     const res = await httpsRequest(this.log, url, options, bdy);
-    this.#lastHttpsClientResponse = res;
 
     const cookieHeaders = res.headers["set-cookie"] || [];
     await Promise.all(
@@ -135,5 +148,7 @@ export default abstract class extends TaskBaseImpl {
         this.httpsClientCookieJar.setCookie(cookie, url)
       )
     );
+
+    return res;
   }
 }
