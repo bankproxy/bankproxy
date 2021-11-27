@@ -35,11 +35,8 @@ class Page {
     else return this.#task.get(action, body);
   }
 
-  text(selector: string, index?: number) {
-    const c = this.#root(selector);
-    if (!c.length) return;
-    const ele = index < 0 ? c.last() : c.first();
-    return ele.text();
+  text(selector: string) {
+    return this.#root(selector).text();
   }
 }
 

@@ -46,7 +46,7 @@ export default class extends TaskBaseCheerio {
     });
 
     const page = this.page;
-    const commontext = page.text(".commontext > b", -1);
+    const commontext = page.text(".commontext > b:last-of-type");
     const map = page.formElements("#credentials");
     if (map) {
       let password = await this.config("password");
