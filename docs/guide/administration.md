@@ -4,7 +4,7 @@ To interact with a bank account, BankProxy needs a configuration for **every** a
 
 ## Create A Connection Via API
 
-To create a connection you need to send a JSON object via HTTP POST to the `/admin/adi/connections` endpoint. This endpoint requires a valid [JWT](https://jwt.io/) token with `aud` set to the value of the `ADMIN_JWT_AUDIENCE` environment variable signed with the `ADMIN_JWT_SECRET`.
+To create a connection you need to send a JSON object via HTTP POST to the `/admin/api/connections` endpoint. This endpoint requires a valid [JWT](https://jwt.io/) token with `aud` set to the value of the `ADMIN_JWT_AUDIENCE` environment variable signed with the `ADMIN_JWT_SECRET`.
 
 ### JWT
 

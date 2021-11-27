@@ -41,7 +41,7 @@ The end-user must then redirected to the returned URL.
 After successful interaction with the bank, BankProxy will redirect the end-user to the `callbackUri` from the original request and append `result` parameter like:
 
 ```
-https://example.com/callback?result=54f65bf4969257b692ff6583c4b3
+https://example.com/callback?result=%2F54f65bf4969257b692ff6583c4b3
 ```
 
 With the result identifier the result can be requested from BankProxy, by appending the `result` to the BankProxy root URL:
