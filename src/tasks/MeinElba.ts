@@ -32,7 +32,7 @@ export default class extends TaskBaseCheerio {
     return "https://mein.elba.raiffeisen.at/pfp-widgetsystem/";
   }
   get loginApiBaseUrl() {
-    return `${this.ssoBaseUrl}/api/quer-kunde-login/kunde-login-ui-services/rest`;
+    return `${this.ssoBaseUrl}/api/bankingquer-kunde-login/kunde-login-ui/rest`;
   }
 
   apiPOST(path, data?: any) {
@@ -71,22 +71,17 @@ export default class extends TaskBaseCheerio {
     await this.page.submitForm("form");
     this.setOrigin(null);
 
-    await this.loginApiPOST("/identify/" + verfuegerNr);
     const pinHash = sha256hexdigest(pin);
-    await this.loginApiPOST("/login/pin", {
-      verfuegerNr,
+    await this.loginApiPOST(`/identify/${verfuegerNr}/pin`, {
       pinHash,
-      bankengruppe: "rbg",
-      numericPin: true,
     });
 
     const challengeType = this.json.challengeType;
     if (challengeType == "PUSH") {
       await this.loginApiPOST("/login/pushtan");
       const res = this.json;
-      this.spinner(res.displayText);
 
-      await this.waitUntil(async () => {
+      await this.waitToAcceptCode(res.displayText, async () => {
         await this.loginApiGET("/login/pushtan/" + res.signaturId);
         return this.json.loggedIn;
       });
