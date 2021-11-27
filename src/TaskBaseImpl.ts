@@ -79,8 +79,8 @@ export default abstract class extends TaskBase {
   async logout() {}
   async cleanup() {}
 
-  async callForEach(cb: (...any) => any, ...args: any[][]) {
-    const ret = [];
+  async callForEach<T>(cb: (...T) => Promise<T>, ...args: any[][]) {
+    const ret: T[] = [];
     for (let i = 0; i < args[0].length; ++i) {
       ret.push(
         await cb.apply(
