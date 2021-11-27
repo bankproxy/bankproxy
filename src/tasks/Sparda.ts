@@ -128,7 +128,7 @@ export default class extends TaskBasePlaywright {
   override async *rawTransactionsForAccount(accountDetails: AccountDetails) {
     this.spinner("Loading dashboard ...");
     await this.wait(1000);
-    await this.goto("https://banking.sparda.at/banking/dashboard");
+    await this.goto("https://banking.sparda.at/banking/finanzuebersicht");
     await this.waitForLoadState("load");
     await this.wait(1000);
     await this.click(`.produkt[data-produktnr="${accountDetails.info}"]`);
