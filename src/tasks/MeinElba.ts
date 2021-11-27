@@ -68,7 +68,7 @@ export default class extends TaskBaseCheerio {
     await this.get(url);
 
     this.setOrigin(this.ssoBaseUrl);
-    await this.page.submitForm("form");
+    await this.submitForm("form");
     this.setOrigin(null);
 
     const pinHash = sha256hexdigest(pin);
