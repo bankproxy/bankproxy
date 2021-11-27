@@ -1,3 +1,5 @@
+import Bawag from "./tasks/Bawag";
+import Easybank from "./tasks/Easybank";
 import ErsteBerlin from "./tasks/ErsteBerlin";
 import ErsteConnect from "./tasks/ErsteConnect";
 import ErsteGeorge from "./tasks/ErsteGeorge";
@@ -12,6 +14,8 @@ import TaskParameters from "./TaskParameters";
 import Test from "./tasks/Test";
 
 const LISTED_TASKS = [
+  Bawag,
+  Easybank,
   ErsteGeorge,
   ErsteConnect,
   ErsteBerlin,

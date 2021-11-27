@@ -32,6 +32,11 @@ export function ifDefined(value?: string) {
   if (value) return value;
 }
 
+export function isSimilarWithoutWhitespace(a: string, b: string) {
+  if (!a || !b) return false;
+  return a.replace(/\s/g, "") === b.replace(/\s/g, "");
+}
+
 export function addSearchParams(uri: string, data?: any) {
   if (data) {
     uri += uri.indexOf("?") < 0 ? "?" : "&";

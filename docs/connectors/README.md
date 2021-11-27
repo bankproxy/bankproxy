@@ -1,5 +1,11 @@
 # Connectors
 
+## at.easybank.ebanking
+
+This connector uses the _eBanking_ web interface accessible via [https://ebanking.easybank.at/](https://ebanking.easybank.at/) to access the accounts.
+
+- `IBAN`: IBAN of the account
+
 ## at.oberbank.banking
 
 This connector uses the _Kundenportal_ web interface accessible via [https://www.banking-oberbank.at/web/oberbank/login](https://www.banking-oberbank.at/web/oberbank/login) to access the accounts.
@@ -21,6 +27,12 @@ This connector uses the _Mein ELBA_ web interface accessible via [https://bankin
 ## at.sparkasse.george
 
 This connector uses the _George_ web interface accessible via [https://george.sparkasse.at/](https://george.sparkasse.at/) to access the accounts.
+
+- `IBAN`: IBAN of the account
+
+## com.bawag.ebanking
+
+This connector uses the _eBanking_ web interface accessible via [https://ebanking.bawagpsk.com/](https://ebanking.bawagpsk.com/) to access the accounts.
 
 - `IBAN`: IBAN of the account
 
