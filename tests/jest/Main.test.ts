@@ -13,6 +13,7 @@ import Test from "../../src/tasks/Test";
 async function createMain() {
   const db = new Database("SecretKey", "sqlite::memory:");
   const redis = new Redis("SecretKey");
+  await redis.connect();
   const ret = new Main(db, redis, "BASE", "/c", "/r", "/t");
   await ret.init();
   return ret;

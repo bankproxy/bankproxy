@@ -7,13 +7,27 @@ import { promisify } from "util";
 const EXPIRE_SECONDS = 10 * 60;
 const KEY_ENCODING = "hex";
 
+function createFakeRedisClient(): any {
+  const client = fakeredis.createClient();
+  return {
+    connect() {},
+    get: promisify(client.get).bind(client),
+    del: promisify(client.del).bind(client),
+    setEx: promisify(client.setex).bind(client),
+  };
+}
+
 export default class {
-  readonly #redis: redis.RedisClient;
+  readonly #redis: ReturnType<typeof redis.createClient>;
   readonly #salt: string;
 
-  constructor(salt: string, uri?: string) {
+  constructor(salt: string, url?: string) {
     this.#salt = salt;
-    this.#redis = uri ? redis.createClient(uri) : fakeredis.createClient();
+    this.#redis = url ? redis.createClient({ url }) : createFakeRedisClient();
+  }
+
+  async connect() {
+    return await this.#redis.connect();
   }
 
   async #cipherAndRedisKey(
@@ -28,11 +42,7 @@ export default class {
     const key = await Cipher.generateRandomKey();
     const [cipher, redisKey] = await this.#cipherAndRedisKey(prefix, key);
     const value = await cipher.encryptBase64(JSON.stringify(data));
-    await promisify(this.#redis.setex).bind(this.#redis)(
-      redisKey,
-      EXPIRE_SECONDS,
-      value
-    );
+    await this.#redis.setEx(redisKey, EXPIRE_SECONDS, value);
     return key.toString(KEY_ENCODING);
   }
 
@@ -43,9 +53,9 @@ export default class {
     const key = Buffer.from(token, KEY_ENCODING);
     if (!key.byteLength) return;
     const [cipher, redisKey] = await this.#cipherAndRedisKey(prefix, key);
-    const value = await promisify(this.#redis.get).bind(this.#redis)(redisKey);
+    const value = await this.#redis.get(redisKey);
     if (!value) return;
-    await promisify(this.#redis.del).bind(this.#redis)(redisKey);
+    await this.#redis.del(redisKey);
     return JSON.parse(await cipher.decryptBase64(value));
   }
 }

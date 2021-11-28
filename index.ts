@@ -33,6 +33,7 @@ const userFromIdToken = verifyJwtHeader(
   Configuration.ADMIN_JWT_AUDIENCE
 );
 
+redis.connect();
 if (process.argv[2] == "init") main.init();
 
 const app = server()
