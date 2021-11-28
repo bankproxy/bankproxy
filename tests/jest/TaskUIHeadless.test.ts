@@ -14,6 +14,7 @@ test("test", async () => {
   expect(() => ui.spinner("text")).not.toThrow();
 
   expect(() => ui.prompt("title", "submit", () => 0)).toThrow();
+  expect(() => ui.promptOption("title", [])).toThrow();
   expect(() => ui.callback("url", "text")).toThrow();
   expect(() => ui.wait(1000)).not.toThrow();
 });

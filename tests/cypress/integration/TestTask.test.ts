@@ -13,6 +13,8 @@ it("executes test task", () => {
 
   cy.get("p").should("have.text", "urlparam=1234");
 
+  cy.get('input[value="BB"]').click();
+
   cy.get('input[value="DONE"]').click();
 
   cy.getResult().its("status").should("eq", 200);

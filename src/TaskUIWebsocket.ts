@@ -129,11 +129,25 @@ export default class extends TaskUI {
     submit: string,
     fn: (builder: ContentBuilder) => void
   ): Promise<any> {
-    const ret = this.#waitForMessage("form", (value) => value);
+    const ret = this.#waitForMessage("form", (value) => value.data);
     this.#sendContent((_) => {
       _.text(title);
       fn(_);
       _.submit(submit);
+    });
+    return ret;
+  }
+
+  override promptOption(
+    title: string,
+    options: { value: string; text?: string }[]
+  ): Promise<string> {
+    const ret = this.#waitForMessage("form", (value) => value.submitter);
+    this.#sendContent((_) => {
+      _.text(title);
+      for (const option of options) {
+        _.submit(option.text, option.value);
+      }
     });
     return ret;
   }

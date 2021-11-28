@@ -14,8 +14,8 @@ export default class {
     this.#add("text", { text });
   }
 
-  submit(text?: string) {
-    this.#add("submit", { text });
+  submit(text?: string, value?: string) {
+    this.#add("submit", { text, value });
   }
 
   checkbox(name: string, label?: string) {

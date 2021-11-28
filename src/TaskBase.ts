@@ -135,6 +135,10 @@ export default abstract class {
     return this.#ui.prompt(title, submit, fn);
   }
 
+  promptOption(title: string, options: { value: string; text?: string }[]) {
+    return this.#ui.promptOption(title, options);
+  }
+
   spinner(text: string) {
     if (isDevelopment) console.log(text);
     return this.#ui.spinner(text);

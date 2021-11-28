@@ -33,5 +33,10 @@ export default abstract class {
     fn: (builder: ContentBuilder) => void
   ): Promise<any>;
 
+  abstract promptOption(
+    title: string,
+    options: { value: string; text?: string }[]
+  ): Promise<string>;
+
   abstract wait(ms: number): Promise<void>;
 }

@@ -21,6 +21,13 @@ export default class extends TaskUI {
     throw new HeadlessError("Headless");
   }
 
+  override promptOption(
+    _title: string,
+    _options: { value: string; text?: string }[]
+  ): Promise<string> {
+    throw new HeadlessError("Headless");
+  }
+
   override wait(ms: number): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);

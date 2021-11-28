@@ -142,6 +142,21 @@
                     ele.type = "submit";
                     ele.classList.add("button");
                     if (line.text) ele.value = line.text;
+
+                    ele.addEventListener("click", (e) => {
+                      const fd = new FormData(form);
+                      const data = {};
+
+                      for (const [key, value] of fd.entries()) {
+                        data[key] = value;
+                      }
+
+                      wsSend({
+                        form: { data, submitter: line.value },
+                      });
+
+                      e.preventDefault();
+                    });
                   });
                 case "link":
                   return ce("input", (ele) => {
@@ -185,19 +200,6 @@
         ws.addEventListener("close", (ev) => {
           if (redirecting) return;
           sl([{ type: "text", text: `CLOSED (${ev.code}): ${ev.reason}` }]);
-        });
-
-        document.getElementById("form").addEventListener("submit", (e) => {
-          const fd = new FormData(e.srcElement);
-          const data = {};
-
-          for (const [key, value] of fd.entries()) {
-            data[key] = value;
-          }
-
-          wsSend({ form: data });
-
-          e.preventDefault();
         });
 
         window.addEventListener("message", (event) => {

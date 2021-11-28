@@ -294,9 +294,34 @@ test("Prompt valid message", async () => {
     ],
   });
 
-  ws.emit("message", JSON.stringify({ form: { name: "value" } }));
+  ws.emit("message", JSON.stringify({ form: { data: { name: "value" } } }));
 
   await expect(promise).resolves.toEqual({ name: "value" });
+
+  ws.emit("close");
+});
+
+test("Prompt options", async () => {
+  const { ui, ws } = createWebsocket();
+  const spy = jest.spyOn(ws, "send");
+
+  const promise = ui.promptOption("title", [
+    { text: "AA", value: "11" },
+    { text: "BB", value: "22" },
+  ]);
+
+  const obj = JSON.parse(spy.mock.calls[0][0]);
+  expect(obj).toEqual({
+    content: [
+      { type: "text", text: "title" },
+      { type: "submit", text: "AA", value: "11" },
+      { type: "submit", text: "BB", value: "22" },
+    ],
+  });
+
+  ws.emit("message", JSON.stringify({ form: { submitter: "22" } }));
+
+  await expect(promise).resolves.toBe("22");
 
   ws.emit("close");
 });

@@ -30,7 +30,12 @@ export default class extends TaskBaseImpl {
       this.spinner(`urlparam=${url.searchParams.get("param")}`);
       await this.wait(1000);
 
-      await this.callback(`${this.callbackUri}`, "DONE");
+      const text = await this.promptOption("Select", [
+        { text: "AA", value: "FAIL" },
+        { text: "BB", value: "DONE" },
+      ]);
+
+      await this.callback(`${this.callbackUri}`, text);
     }
 
     return [
