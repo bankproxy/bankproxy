@@ -167,7 +167,7 @@ export default class extends TaskBaseCheerio {
       debtorName: debtor.name,
       debtorAccount: debtor.account,
       creditorName: creditor.name,
-      creditorAccount: debtor.account,
+      creditorAccount: creditor.account,
       creditorId: item.creditorId,
       mandateId: item.mandateId,
       remittanceInformationUnstructured: references[0],
