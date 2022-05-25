@@ -34,6 +34,7 @@ test("GET 200", async () => {
 
   const t = new TestTask();
   await t.get("/path");
+  expect(t.responseStatusCode).toEqual(200);
   expect(t.json).toMatchObject({ a: 1 });
 });
 
@@ -61,6 +62,7 @@ test("GET 404", async () => {
 
   const t = new TestTask();
   await t.get("/path");
+  expect(t.responseStatusCode).toEqual(404);
   expect(t.text).toEqual("missing");
 });
 

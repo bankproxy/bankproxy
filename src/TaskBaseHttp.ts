@@ -25,6 +25,10 @@ export default abstract class extends TaskBaseImpl {
     return this.raw.headers;
   }
 
+  get responseStatusCode() {
+    return this.raw.statusCode;
+  }
+
   get raw() {
     return this.#lastHttpsClientResponse;
   }
