@@ -26,6 +26,12 @@ export class MissingConfigurationError extends Error {
   }
 }
 
+export class BerlinTppMessagesError extends BadRequestError {
+  constructor(tppMessages: Array<object>) {
+    super(`TppMessages: ${JSON.stringify(tppMessages)}`);
+  }
+}
+
 class NameValueError extends Error {
   constructor(text: string, name: string, value?: string) {
     let message = `${text}: ${name}`;

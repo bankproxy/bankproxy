@@ -1,5 +1,6 @@
 import { AccountDetails, Transactions } from "./Types";
 import {
+  BerlinTppMessagesError,
   InvalidStateError,
   MissingConfigurationError,
   UnsupportedTypeError,
@@ -214,27 +215,35 @@ export default abstract class extends TaskBaseOAuth {
   }
 
   async aisGET(path: string, query?: any) {
-    return this.get(this.aisBaseUrl + path, query);
+    return this.#checkResponeStatus(this.get(this.aisBaseUrl + path, query));
   }
 
   async pisGET(path: string, query?: any) {
-    return this.get(this.pisBaseUrl + path, query);
+    return this.#checkResponeStatus(this.get(this.pisBaseUrl + path, query));
   }
 
   async pisPOST(path: string, body?: any) {
-    return this.postJSON(this.pisBaseUrl + path, body);
+    return this.#checkResponeStatus(
+      this.postJSON(this.pisBaseUrl + path, body)
+    );
   }
 
   async consentsGET(path: string, query?: any) {
-    return this.get(this.consentsBaseUrl + path, query);
+    return this.#checkResponeStatus(
+      this.get(this.consentsBaseUrl + path, query)
+    );
   }
 
   async consentsPOST(path: string, body?: any) {
-    return this.postJSON(this.consentsBaseUrl + path, body);
+    return this.#checkResponeStatus(
+      this.postJSON(this.consentsBaseUrl + path, body)
+    );
   }
 
   async consentsPUT(path: string, body?: any) {
-    return this.putJSON(this.consentsBaseUrl + path, body);
+    return this.#checkResponeStatus(
+      this.putJSON(this.consentsBaseUrl + path, body)
+    );
   }
 
   protected override addRequestHeaders(headers: any, method: string) {
@@ -243,5 +252,13 @@ export default abstract class extends TaskBaseOAuth {
     if (this.ipAddress) headers["PSU-IP-Address"] = this.ipAddress;
     if (this.ipPort) headers["PSU-IP-Port"] = this.ipPort;
     if (this.userAgent) headers["PSU-User-Agent"] = this.userAgent;
+  }
+
+  async #checkResponeStatus(fn: Promise<any>) {
+    const ret = await fn;
+    const statusCode = this.responseStatusCode;
+    if (400 <= statusCode && statusCode < 500)
+      throw new BerlinTppMessagesError(this.json.tppMessages);
+    return ret;
   }
 }
