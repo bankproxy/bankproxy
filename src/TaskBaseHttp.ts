@@ -12,6 +12,7 @@ export default abstract class extends TaskBaseImpl {
   #httpsClientCert?: Buffer;
   #httpsClientKey?: Buffer;
   #httpsClientAuthorization?: string;
+  #httpsClientRequestHeaders?: object = {};
   #httpsClientOrigin?: string;
   public httpsClientCertificateEnable = false;
   protected httpsClientCookieJar = new tough.CookieJar();
@@ -53,6 +54,15 @@ export default abstract class extends TaskBaseImpl {
     this.setBearerAuthorization(token);
     const ret = await fn();
     this.#httpsClientAuthorization = old;
+    return ret;
+  }
+
+  async withRequestHeaders<T>(headers: object, fn: () => T | Promise<T>) {
+    const old = this.#httpsClientRequestHeaders;
+    const copy = Object.assign({}, old);
+    this.#httpsClientRequestHeaders = Object.assign(copy, headers);
+    const ret = await fn();
+    this.#httpsClientRequestHeaders = old;
     return ret;
   }
 
@@ -118,6 +128,7 @@ export default abstract class extends TaskBaseImpl {
         "Cache-Control": "no-cache",
         "User-Agent": USER_AGENT,
         "X-Request-ID": uuidv4(),
+        ...this.#httpsClientRequestHeaders,
       },
       cert: this.httpsClientCertificateEnable && this.#httpsClientCert,
       key: this.httpsClientCertificateEnable && this.#httpsClientKey,

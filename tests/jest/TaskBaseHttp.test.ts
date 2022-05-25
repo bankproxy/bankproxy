@@ -184,6 +184,36 @@ test("withBearerAuthorization", async () => {
   expect(t.text).toEqual("Bearer a");
 });
 
+test("withRequestHeaders", async () => {
+  nock(BASE_URL)
+    .get("/path")
+    .times(5)
+    .reply(200, function () {
+      return {
+        first: this.req.headers["first"],
+        second: this.req.headers["second"],
+      };
+    });
+
+  const t = new TestTask();
+  await t.get("/path");
+  expect(t.json).toMatchObject({});
+
+  await t.withRequestHeaders({ first: "a" }, () => t.get("/path"));
+  expect(t.json).toMatchObject({ first: "a" });
+
+  await t.withRequestHeaders({ first: "a" }, async () => {
+    await t.withRequestHeaders({ second: "b" }, () => t.get("/path"));
+    expect(t.json).toMatchObject({ first: "a", second: "b" });
+
+    await t.withRequestHeaders({ first: "c" }, () => t.get("/path"));
+    expect(t.json).toMatchObject({ first: "c" });
+  });
+
+  await t.get("/path");
+  expect(t.json).toMatchObject({});
+});
+
 test("setAccessTokenFromLocationHeader", async () => {
   nock(BASE_URL)
     .get("/path")
