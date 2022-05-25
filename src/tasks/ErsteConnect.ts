@@ -108,6 +108,7 @@ export default class extends TaskBaseBerlin {
   override async executeSepaCreditTransferPayments(
     payments: SepaCreditTransferPayment[]
   ) {
+    this.spinner("Checking account information...");
     await this.accountInfos(
       payments.map((payment) => payment.debtorAccount.iban)
     );
@@ -115,6 +116,9 @@ export default class extends TaskBaseBerlin {
     const list = [];
     const paymentIds = [];
     for (const payment of payments) {
+      this.spinner(
+        `Create payment for ${payment.creditorName} (${payment.instructedAmount.amount})`
+      );
       await this.pisPOST("/v1/payments/sepa-credit-transfers", payment);
       list.push([
         this.json._links.scaRedirect.href,
@@ -123,6 +127,7 @@ export default class extends TaskBaseBerlin {
       paymentIds.push(this.json.paymentId);
     }
 
+    this.spinner("Creating signing basket...");
     await this.pisPOST("/v1/signing-baskets", { paymentIds });
 
     await this.prompt("Initiate payments", "Done", (_) => {
