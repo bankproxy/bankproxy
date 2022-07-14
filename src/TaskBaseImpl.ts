@@ -4,7 +4,7 @@ import {
   Transaction,
   Transactions,
 } from "./Types";
-import { BadRequestError, NotImplementedError } from "./Errors";
+import { BadRequestError, NotFoundError, NotImplementedError } from "./Errors";
 import TaskBase from "./TaskBase";
 import { isDevelopment } from "./Utilities";
 
@@ -178,10 +178,16 @@ export default abstract class extends TaskBase {
     }
 
     const ibans = accounts.map((acc) => acc.iban);
+    this.spinner("Getting information about accounts...");
     const accountInfos = await this.accountInfos(ibans);
     const accountDetails = accounts.map((value, index): AccountDetails => {
+      const accountInfo = accountInfos[index];
+      if (!accountInfo)
+        throw new NotFoundError(
+          `Could not get information for account ${value.iban}.`
+        );
       return {
-        info: accountInfos[index],
+        info: accountInfo,
         iban: value.iban,
         dateFrom: value.dateFrom,
         dateTo: value.dateTo,
