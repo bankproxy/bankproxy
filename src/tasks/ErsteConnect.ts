@@ -3,7 +3,7 @@ import {
   SepaCreditTransferPayment,
   Transactions,
 } from "../Types";
-import { BadRequestError } from "../Errors";
+import { BadRequestError, InvalidStateError } from "../Errors";
 import TaskBaseBerlin from "../TaskBaseBerlin";
 
 const CONFIG_KEY_WALLET_ID = "WalletId";
@@ -113,29 +113,35 @@ export default class extends TaskBaseBerlin {
       payments.map((payment) => payment.debtorAccount.iban)
     );
 
-    const list = [];
     const paymentIds = [];
     for (const payment of payments) {
       this.spinner(
         `Create payment for ${payment.creditorName} (${payment.instructedAmount.amount})`
       );
       await this.pisPOST("/v1/payments/sepa-credit-transfers", payment);
-      list.push([
-        this.json._links.scaRedirect.href,
-        `${payment.creditorName} (${payment.instructedAmount.amount})`,
-      ]);
       paymentIds.push(this.json.paymentId);
     }
 
     this.spinner("Creating signing basket...");
-    await this.pisPOST("/v1/signing-baskets", { paymentIds });
+    const headers = {
+      "TPP-Redirect-URI": this.callbackUri,
+      "TPP-Nok-Redirect-URI": this.callbackUri,
+    };
+    await this.withRequestHeaders(headers, () =>
+      this.pisPOST("/v1/signing-baskets", { paymentIds })
+    );
+    const statusHref = this.json._links.status.href;
 
-    await this.prompt("Initiate payments", "Done", (_) => {
-      list.forEach(([url, name]) => {
-        _.link(url, name);
-      });
-      _.link(this.json._links.scaRedirect.href, "Sign All Payments");
-    });
+    await this.callback(this.json._links.scaRedirect.href, "Sign Payments");
+
+    this.spinner("Checking status of signing basket...");
+    await this.pisGET(statusHref);
+    const transactionStatus = this.json.transactionStatus;
+    if (!["ACSP", "ACTC", "ACWC"].includes(transactionStatus))
+      throw new InvalidStateError(
+        "signing basket transactionStatus",
+        transactionStatus
+      );
   }
 
   override get baseUrl() {
