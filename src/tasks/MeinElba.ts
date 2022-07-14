@@ -29,7 +29,7 @@ export default class extends TaskBaseCheerio {
     return "https://mein.elba.raiffeisen.at/api";
   }
   get startUrl() {
-    return "https://mein.elba.raiffeisen.at/pfp-widgetsystem/";
+    return "https://mein.elba.raiffeisen.at/bankingws-widgetsystem/";
   }
   get loginApiBaseUrl() {
     return `${this.ssoBaseUrl}/api/bankingquer-kunde-login/kunde-login-ui/rest`;
@@ -59,7 +59,9 @@ export default class extends TaskBaseCheerio {
     const [disposernr, pin] = this.auth;
     const verfuegerNr = disposernr.toUpperCase().replace(/\-/g, "");
 
-    await this.get(this.startUrl);
+    await this.withRequestHeaders({ Accept: "text/html" }, () =>
+      this.get(this.startUrl)
+    );
     const url = (this.text as any)
       .match(/window\.location\s*=\s*'([^']*)'/)[1]
       .replaceAll("\\/", "/")
@@ -131,7 +133,7 @@ export default class extends TaskBaseCheerio {
       );
       if (paymentIds.length) await this.wait(1000);
       await this.apiPOST(
-        "/pfp-pfm/auftrag-ui-services/rest/neuer-auftrag/erfassteAuftraege",
+        "/bankingzv-neuer-auftrag/neuer-auftrag-ui/rest/erfassteAuftraege",
         {
           auftragsart: "SEPA",
           durchfuehrungsart: "EINZELAUFTRAG",
@@ -152,34 +154,34 @@ export default class extends TaskBaseCheerio {
     const query = paymentIds.map((id) => "id=" + id).join("&");
 
     await this.apiPOST(
-      "/pfp-pfm/auftrag-ui-services/rest/erfasster-auftrag-page-fragment/signaturen/erfassteAuftraege?" +
+      "/bankingzv-erfasster-auftrag/erfasster-auftrag-ui/rest/signaturen/sendErfassteAuftraege?" +
         query
     );
 
     const signaturId = this.json;
 
     await this.apiGET(
-      `/quer-signatur/signatur-ui-services/rest/signaturen/${signaturId}/moeglicheverfahren`
+      `/bankingquer-signatur/signatur-ui/rest/signaturen/${signaturId}/moeglicheverfahren`
     );
 
     const moeglicheverfahren = this.json;
     const verfahren = moeglicheverfahren[0];
 
     await this.apiPOST(
-      `/quer-signatur/signatur-ui-services/rest/signaturen/${signaturId}/${verfahren}/start`
+      `/bankingquer-signatur/signatur-ui/rest/signaturen/${signaturId}/${verfahren}/start`
     );
 
     this.spinner(`Please sign payments`);
     await this.wait(3000);
     await this.waitUntil(async () => {
       await this.apiPOST(
-        `/quer-signatur/signatur-ui-services/rest/signaturen/${signaturId}/${verfahren}/verify`
+        `/bankingquer-signatur/signatur-ui/rest/signaturen/${signaturId}/${verfahren}/verify`
       );
       return this.json;
     });
 
     await this.apiPOST(
-      `/pfp-pfm/auftrag-ui-services/rest/erfasster-auftrag-page-fragment/gesendeteAuftraege/ausErfassten?${query}&signaturId=${signaturId}`
+      `/bankingzv-erfasster-auftrag/erfasster-auftrag-ui/rest/gesendeteAuftraege/ausErfassten?${query}&signaturId=${signaturId}`
     );
 
     this.spinner(`Waiting before getting transactions`);
@@ -187,10 +189,13 @@ export default class extends TaskBaseCheerio {
   }
 
   override async balancesForAccount(accountDetails: AccountDetails) {
-    await this.apiGET("/pfp-konto/konto-ui-services/rest/kontobetraege", {
-      iban: accountDetails.iban,
-    });
-    const kontobetrag = this.json[accountDetails.iban];
+    await this.apiGET(
+      "/bankingzv-erfasster-auftrag/erfasster-auftrag-ui/rest/kontenMitKontoinfo",
+      {
+        iban: accountDetails.iban,
+      }
+    );
+    const kontobetrag = this.json[0];
     return [
       {
         balanceAmount: toAmount(kontobetrag.kontostand),
@@ -211,16 +216,13 @@ export default class extends TaskBaseCheerio {
 
   override async *rawTransactionsForAccount(accountDetails: AccountDetails) {
     const token = (accountDetails.entryReferenceFrom || "").split("@");
-    await this.apiPOST(
-      "/pfp-umsatz/umsatz-ui-services/rest/umsatz-page-fragment/umsaetze",
-      {
-        predicate: {
-          ibans: [accountDetails.iban],
-          buchungVon: token[1],
-        },
-      }
-    );
-    let umsaetze = this.json;
+    await this.apiPOST("/bankingzv-umsatz/umsatz-ui/rest/kontoumsaetze", {
+      predicate: {
+        ibans: [accountDetails.iban],
+        buchungVon: token[1],
+      },
+    });
+    let umsaetze = this.json.list;
     const tokenId = parseInt(token[0], 10);
     if (tokenId) umsaetze = umsaetze.filter((t) => t.id > tokenId);
 
