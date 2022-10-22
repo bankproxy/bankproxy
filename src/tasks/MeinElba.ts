@@ -78,30 +78,42 @@ export default class extends TaskBaseCheerio {
       pinHash,
     });
 
-    if (this.json.code) throw new LoginError(this.json.message);
+    while (!this.json.loggedIn) {
+      if (this.json.code) throw new LoginError(this.json.message);
 
-    const challengeType = this.json.challengeType;
-    if (challengeType == "PUSH") {
-      await this.loginApiPOST("/login/pushtan");
-      const res = this.json;
+      const challengeType = this.json.challengeType;
+      if (challengeType == "PIN_EXTENDED") {
+        await this.loginApiPOST(`/identify/${verfuegerNr}/pin`, {
+          pinHash,
+          konto: {
+            kontoType: "iban",
+            depotBlz: "",
+            depotnummer: 0,
+            iban: this.ibans[0],
+          },
+        });
+      } else if (challengeType == "PUSH") {
+        await this.loginApiPOST("/login/pushtan");
+        const res = this.json;
 
-      await this.waitToAcceptCode(res.displayText, async () => {
-        await this.loginApiGET("/login/pushtan/" + res.signaturId);
-        return this.json.loggedIn;
-      });
-    } else if (challengeType == "SMSPIN") {
-      await this.loginApiPOST("/login/smstan");
-      const res = this.json;
+        await this.waitToAcceptCode(res.displayText, async () => {
+          await this.loginApiGET("/login/pushtan/" + res.signaturId);
+          return this.json.loggedIn || this.json.challengeType != challengeType;
+        });
+      } else if (challengeType == "SMSPIN") {
+        await this.loginApiPOST("/login/smstan");
+        const res = this.json;
 
-      const tfa = await this.prompt(res.displayText, "Auth", (_) => {
-        _.input("tan", "TAN:");
-      });
+        const tfa = await this.prompt(res.displayText, "Auth", (_) => {
+          _.input("tan", "TAN:");
+        });
 
-      await this.loginApiPUT("/login/smstan/" + res.signaturId, {
-        pin: pinHash,
-        smsTAN: tfa.tan,
-      });
-    } else throw new UnsupportedTypeError("challengeType ", challengeType);
+        await this.loginApiPUT("/login/smstan/" + res.signaturId, {
+          pin: pinHash,
+          smsTAN: tfa.tan,
+        });
+      } else throw new UnsupportedTypeError("challengeType ", challengeType);
+    }
 
     await this.loginApiPOST("/login", {
       updateSession: false,
