@@ -1,9 +1,9 @@
 import * as cheerio from "cheerio";
 
 export class PageNode {
-  #node: cheerio.Cheerio<cheerio.Node>;
+  #node: cheerio.Cheerio<cheerio.AnyNode>;
 
-  constructor(node: cheerio.Cheerio<cheerio.Node>) {
+  constructor(node: cheerio.Cheerio<cheerio.AnyNode>) {
     this.#node = node;
   }
 
