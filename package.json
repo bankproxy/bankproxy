@@ -84,16 +84,6 @@
     "transform": {
       ".(ts|tsx)": "ts-jest"
     },
-    "globals": {
-      "ts-jest": {
-        "compiler": "ttypescript",
-        "diagnostics": {
-          "ignoreCodes": [
-            151001
-          ]
-        }
-      }
-    },
     "testPathIgnorePatterns": [
       "/cypress/"
     ]
