@@ -45,6 +45,7 @@
     "@types/jsonwebtoken": "^8.5.9",
     "@types/redis": "^4.0.11",
     "@types/tough-cookie": "^4.0.2",
+    "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
