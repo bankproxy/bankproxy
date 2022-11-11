@@ -1,1 +1,4 @@
     await this.click(`.produkt[data-produktnr="${accountDetails.info}"]`);
+    keyPair.privateKey,
+  const jwtKey = keyPair.publicKey.export({ format: "jwk" });
+  const keyPair = await promisify(generateKeyPair)("rsa", {

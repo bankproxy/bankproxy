@@ -7,7 +7,6 @@ import {
   scrypt,
 } from "crypto";
 import { promisify } from "util";
-import { rsaPublicKey } from "bursar";
 
 export const hkdfAsync = promisify(hkdf);
 export const randomBytesAsync = promisify(randomBytes);
@@ -54,9 +53,20 @@ export function sha256hexdigest(data: string) {
   return createHash("sha256").update(data).digest("hex");
 }
 
-export function publicRsaEncryptUpperHex(key: any, buffer: Buffer) {
-  const pem = rsaPublicKey.pkcs1(key);
-  return publicEncrypt(createPublicKey(pem), buffer)
+export function hexToBase64(data: string) {
+  return Buffer.from(data, "hex").toString("base64");
+}
+
+export function publicRsaEncryptUpperHex(
+  { modulus, publicExponent }: { modulus: string; publicExponent: string },
+  buffer: Buffer
+) {
+  const key = {
+    kty: "RSA",
+    e: hexToBase64(publicExponent),
+    n: hexToBase64(modulus),
+  };
+  return publicEncrypt(createPublicKey({ format: "jwk", key }), buffer)
     .toString("hex")
     .toUpperCase();
 }

@@ -3,8 +3,11 @@ import {
   containsOnlyNumbers,
   dateDMYToYMD,
   ifDefined,
+  publicRsaEncryptUpperHex,
   sha256hexdigest,
 } from "../../src/Utilities";
+import { generateKeyPair, privateDecrypt } from "crypto";
+import { promisify } from "util";
 
 test("containsOnlyNumbers", async () => {
   expect(containsOnlyNumbers("0123456789")).toBeTruthy();
@@ -34,6 +37,22 @@ test("addSearchParams", async () => {
   expect(addSearchParams("test?a=a", { b: "b", c: "c" })).toEqual(
     "test?a=a&b=b&c=c"
   );
+});
+
+test("publicRsaEncryptUpperHex", async () => {
+  const keyPair = await promisify(generateKeyPair)("rsa", {
+    modulusLength: 1024,
+  });
+  const jwtKey = keyPair.publicKey.export({ format: "jwk" });
+  const modulus = Buffer.from(jwtKey.n, "base64").toString("hex");
+  const publicExponent = Buffer.from(jwtKey.e, "base64").toString("hex");
+  const buffer = Buffer.from("Test");
+  const encoded = publicRsaEncryptUpperHex({ modulus, publicExponent }, buffer);
+  const decoded = privateDecrypt(
+    keyPair.privateKey,
+    Buffer.from(encoded, "hex")
+  );
+  expect(decoded).toEqual(buffer);
 });
 
 test("sha256hexdigest", async () => {
