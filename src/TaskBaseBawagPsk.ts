@@ -97,7 +97,7 @@ const toDate = dateDMYToYMD;
 export default abstract class extends TaskBaseCheerio {
   static readonly CONFIGS = [...TaskBaseCheerio.CONFIGS];
 
-  abstract get loginSvc();
+  abstract get loginSvc(): string;
   abstract get balancesSelector(): string;
   abstract get transactionTdIndices(): number[];
 

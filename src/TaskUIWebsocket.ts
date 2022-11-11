@@ -50,7 +50,7 @@ export default class extends TaskUI {
     this.#closedCb?.();
   }
 
-  #send(data) {
+  #send(data: any) {
     if (!this.#closed) this.#ws.send(JSON.stringify(data));
   }
 
@@ -72,7 +72,7 @@ export default class extends TaskUI {
         return reject(new ConnectionClosedError("Already closed"));
 
       let onClose: () => void = null;
-      const resolve2 = (value) => {
+      const resolve2 = (value: T | PromiseLike<T>) => {
         this.#closedCb = null;
         resolve(value);
       };

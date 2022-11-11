@@ -4,7 +4,7 @@ export default class extends TaskBaseBawagPsk {
   static readonly CONFIGS = [...TaskBaseBawagPsk.CONFIGS];
   static readonly ID = "at.easybank.ebanking";
 
-  override get baseUrl(): string {
+  override get baseUrl() {
     return "https://ebanking.easybank.at";
   }
 

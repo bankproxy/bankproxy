@@ -16,7 +16,7 @@ export default class {
     return this.#model.init();
   }
 
-  async create(user: string, type: string, name: string) {
+  async create(user: string, type: string, name?: string) {
     const connector = await this.#model.Connector.create({ type, name });
     await connector.createConnectorUser({ user });
     return new DatabaseItem(
@@ -32,7 +32,7 @@ export default class {
     return connector && (await connector.checkClientSecret(clientSecret));
   }
 
-  async list(user: string) {
+  async list(user: string | null) {
     const include: Includeable[] = [];
     if (user)
       include.push({ model: this.#model.ConnectorUser, where: { user } });
@@ -41,7 +41,7 @@ export default class {
     });
   }
 
-  async find(user: string, clientId: string, clientSecret: string) {
+  async find(user: string | null, clientId: string, clientSecret: string) {
     const include: Includeable[] = [this.#model.ConnectorConfig];
     if (user)
       include.push({ model: this.#model.ConnectorUser, where: { user } });

@@ -7,7 +7,7 @@ export class PageNode {
     this.#node = node;
   }
 
-  #find(selector: string) {
+  #find(selector?: string) {
     if (!selector) return this.#node;
     return this.#node.find(selector);
   }

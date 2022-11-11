@@ -23,7 +23,7 @@ export function httpsRequest(
 
   return new Promise<HttpsResponse>((resolve, reject) => {
     const req = https.request(url, options, (res) => {
-      const chunks = [];
+      const chunks: Buffer[] = [];
       res.on("data", (chunk) => {
         chunks.push(chunk);
       });

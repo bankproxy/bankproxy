@@ -63,7 +63,7 @@ export default class {
     await this.#db.init();
   }
 
-  async createTask(auth: Auth, body: any) {
+  async createTask(auth: Auth | undefined, body: any) {
     if (!auth) throw new UnauthorizedError();
     const ok = await this.#db.checkCredentials(auth.name, auth.pass);
     if (!ok) throw new ForbiddenError();
@@ -75,7 +75,7 @@ export default class {
     return this.#taskUriFor(id);
   }
 
-  async headlessTask(auth: Auth, ui: TaskUI, body: any) {
+  async headlessTask(auth: Auth | undefined, ui: TaskUI, body: any) {
     if (!auth) throw new UnauthorizedError();
     const db = await this.#db.find(null, auth.name, auth.pass);
     if (!db) throw new ForbiddenError();
@@ -90,6 +90,7 @@ export default class {
 
     const { auth, body } = data;
     const db = await this.#db.find(null, auth.name, auth.pass);
+    if (!db) throw new NotFoundError();
 
     const ucs =
       body.user &&
@@ -130,7 +131,7 @@ export default class {
     return result;
   }
 
-  async result(auth: Auth, id: string) {
+  async result(auth: Auth | undefined, id: string) {
     if (!auth) throw new UnauthorizedError();
     const db = await this.#db.find(null, auth.name, auth.pass);
     if (!db) throw new ForbiddenError();

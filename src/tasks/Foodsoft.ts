@@ -16,13 +16,13 @@ export default class extends TaskBaseOAuth {
 
   #configInstanceUrl: string;
 
-  override get baseUrl(): string {
+  override get baseUrl() {
     return this.#configInstanceUrl;
   }
-  override get oauthBaseUrl(): string {
+  override get oauthBaseUrl() {
     return this.baseUrl + "/oauth";
   }
-  override get oauthScope(): string {
+  override get oauthScope() {
     return "offline_access finance:user";
   }
 

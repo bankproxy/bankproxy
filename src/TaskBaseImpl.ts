@@ -17,7 +17,7 @@ export default abstract class extends TaskBase {
     return this.#auth;
   }
 
-  get authFields() {
+  get authFields(): string[] {
     return [];
   }
 

@@ -35,23 +35,23 @@ export default class extends TaskBaseCheerio {
     return `${this.ssoBaseUrl}/api/bankingquer-kunde-login/kunde-login-ui/rest`;
   }
 
-  apiPOST(path, data?: any) {
+  apiPOST(path: string, data?: any) {
     return this.postJSON(this.apiBaseUrl + path, data);
   }
 
-  apiGET(path, data?: any) {
+  apiGET(path: string, data?: any) {
     return this.get(this.apiBaseUrl + path, data);
   }
 
-  loginApiPOST(path, data?: any) {
+  loginApiPOST(path: string, data?: any) {
     return this.postJSON(this.loginApiBaseUrl + path, data);
   }
 
-  loginApiPUT(path, data?: any) {
+  loginApiPUT(path: string, data?: any) {
     return this.putJSON(this.loginApiBaseUrl + path, data);
   }
 
-  loginApiGET(path) {
+  loginApiGET(path: string) {
     return this.get(this.loginApiBaseUrl + path);
   }
 
