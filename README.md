@@ -51,6 +51,8 @@ To run BankProxy in production a few environment variables must be set:
 - `ADMIN_JWT_SECRET`: Secret used to sign the admin access JWT
 - `ADMIN_JWT_AUDIENCE`: Expected `aud` in the admin access JWT
 
+As an alternative to passing sensitive information via environment variables, `_FILE` may be appended to the previously listed environment variables, causing BankProxy to load the values for those variables from files instead.
+
 Please check out the [documentation](https://bankproxy.github.io) for more details about the configuration.
 
 ## License

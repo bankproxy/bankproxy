@@ -22,6 +22,8 @@ It provides the following environment variables for configuration:
 - `ADMIN_JWT_SECRET`: Secret used to sign the admin access JWT
 - `ADMIN_JWT_AUDIENCE`: Expected `aud` in the admin access JWT
 
+As an alternative to passing sensitive information via environment variables, `_FILE` may be appended to the previously listed environment variables, causing BankProxy to load the values for those variables from files instead.
+
 Running the container with `npm start init` will initialize all required resources like the database schema. Since this could destroy stored data it's recommended to run the container with the default command (`npm start`) to avoid accidental data loss.
 
 **The server must be run behind some HTTP reverse proxy with WebSocket support to be secure.** Deployment without a reverse proxy should be used only in a setup, where the **headless** mode of BankProxy is the sole mode of operation.
