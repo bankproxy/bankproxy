@@ -34,7 +34,7 @@ export function httpsRequest(
         log(`${options.method} ${url}: ${JSON.stringify(options.headers)}`);
         log(`> ${data}`);
         log(`----------------------------------------`);
-        log(`${JSON.stringify(res.headers)}`);
+        log(`${res.statusCode} ${JSON.stringify(res.headers)}`);
         log(`< ${body.toString()}`);
 
         resolve({
