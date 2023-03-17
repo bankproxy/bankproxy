@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   unit:
@@ -12,27 +12,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '15'
-    - run: npm install
-    - run: npm run test:unit
-    - uses: codecov/codecov-action@v2
-      with:
-        flags: unittests
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - run: npm install
+      - run: npm run test:unit
+      - uses: codecov/codecov-action@v3
+        with:
+          flags: unittests
 
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '15'
-    - run: npm install
-    - run: npm run test:e2e
-    - uses: codecov/codecov-action@v2
-      with:
-        flags: e2etests
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - run: npm install
+      - run: npm run test:e2e
+      - uses: codecov/codecov-action@v3
+        with:
+          flags: e2etests

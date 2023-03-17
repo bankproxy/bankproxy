@@ -2,9 +2,9 @@ name: codespell
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   eslint:
@@ -12,5 +12,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: codespell-project/actions-codespell@master
+      - uses: actions/checkout@v3
+      - uses: codespell-project/actions-codespell@master
