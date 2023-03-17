@@ -43,19 +43,19 @@ This connector uses the _ErsteConnect_ REST API to access the accounts. Using it
 - `ClientCertificate`: Public certificate to access the API (in PEM format)
 - `ClientCertificateKey`: Private key to access the API (in PEM format)
 - `IBAN`: IBAN of the account
-- `OAuthClientId`: OAuth ClientId form the developer portal
-- `OAuthClientSecret`: OAuth ClientSecret form the developer portal
+- `OAuthClientId`: OAuth ClientId from the developer portal
+- `OAuthClientSecret`: OAuth ClientSecret from the developer portal
 
 ## com.erstegroup.ersteconnect
 
-This connector uses the _ErsteConnect_ REST API to access the accounts. Using it requires a special certificate and a contract from bank.
+This connector uses the _ErsteConnect_ REST API to access the accounts. Using it requires a special certificate and a contract from the bank.
 
 - `ClientCertificate`: Public certificate to access the API (in PEM format)
 - `ClientCertificateKey`: Private key to access the API (in PEM format)
 - `IBAN`: IBAN of the account
-- `OAuthClientId`: OAuth ClientId form the developer portal
-- `OAuthClientSecret`: OAuth ClientSecret form the developer portal
-- `WebApiKey`: Web-Api-Key form the developer portal
+- `OAuthClientId`: OAuth ClientId from the developer portal
+- `OAuthClientSecret`: OAuth ClientSecret from the developer portal
+- `WebApiKey`: Web-Api-Key from the developer portal
 
 ## com.holvi.app
 
@@ -65,7 +65,7 @@ This connector uses the _Holvi_ web interface accessible via [https://login.app.
 
 ## net.foodcoops.foodsoft
 
-This connector uses the REST API to access the financial transactions of an [Foodsoft](https://foodcoops.net) ordergroup.
+This connector uses the REST API to access the financial transactions of a [Foodsoft](https://foodcoops.net) ordergroup.
 
 - `IBAN`: Dummy IBAN, e.g. `ZZ75FOODSOFT`
 - `InstanceUrl`: The URL of the foodsoft instance, e.g. `https://app.foodcoops.net/demo`

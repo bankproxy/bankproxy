@@ -29,7 +29,7 @@ Please ensure that the _expires at_ property `exp` is set correctly.
 
 ### Create The Connection
 
-With a valid JWT a HTTP request can be sent to bankproxy.
+With a valid JWT an HTTP request can be sent to BankProxy.
 
 ```http
 POST /admin/api/connections HTTP/1.1

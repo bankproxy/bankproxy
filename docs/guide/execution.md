@@ -12,7 +12,7 @@ Basic MThkODFmODNiNWZiNmJmMzU0YTM2YjI5YzhjYTljZDc6ODk0YTkwMDk0ZjczZDgwOGViNDYwOD
 
 ## UI Mode
 
-To start an interaction you need to send a HTTP POST request to BankProxy **with** the `callbackUri` set.
+To start an interaction you need to send an HTTP POST request to BankProxy **with** the `callbackUri` set.
 
 ```http
 POST / HTTP/1.1
@@ -29,14 +29,14 @@ Content-Type: application/json
 }
 ```
 
-BankProxy will respond to it with an URL in the `Location` header.
+BankProxy will respond to it with a URL in the `Location` header.
 
 ```http
 HTTP/1.1 200 OK
 Location: https://bankproxy.example.com/task/f4f59857bb369265c4b3
 ```
 
-The end-user must then redirected to the returned URL.
+The end-user must then be redirected to the returned URL.
 
 After successful interaction with the bank, BankProxy will redirect the end-user to the `callbackUri` from the original request and append `result` parameter like:
 
@@ -51,7 +51,7 @@ GET /54f65bf4969257b692ff6583c4b3 HTTP/1.1
 Authorization: Basic MThkODFmODNiNWZiNmJm...NDYwODc3MTVjNGEyZTI=
 ```
 
-BankProxy will respond with the result and will delete it from it's internal storage, so requesting the same result twice will not work:
+BankProxy will respond with the result and will delete it from its internal storage, so requesting the same result twice will not work:
 
 ```http
 HTTP/1.1 200 OK
@@ -171,7 +171,7 @@ BankProxy supports an additional way to interact with the bank, to allow automat
 
 **Please note that this mode is not supported for all banks, since users can not e.g. confirm a two-factor login this way.**
 
-To start an interaction you need to send a HTTP POST request to BankProxy **without** the `callbackUri` set.
+To start an interaction you need to send an HTTP POST request to BankProxy **without** the `callbackUri` set.
 
 ```http
 POST / HTTP/1.1
