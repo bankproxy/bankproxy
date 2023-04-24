@@ -47,10 +47,10 @@ export default class extends TaskBaseCheerio {
     });
 
     const page = this.page;
-    const error = page.text("#error");
+    const error = page.text("#authnError");
     if (error) throw new LoginError(error);
 
-    const commontext = page.text(".commontext > b:last-of-type");
+    const commontext = page.text(".wrapper > .mb-2 > b.fs-4");
     const map = page.formElements("#credentials");
     if (map) {
       let password = await this.config("password");
