@@ -127,7 +127,7 @@ export default class extends TaskBaseCheerio {
     await this.get(this.ssoBaseUrl + "/as/authorization.oauth2", {
       response_type: "token",
       client_id: "DRB-PFP-RBG",
-      scope: "edit",
+      scope: "openid profile product-ui-pfp",
       redirect_uri: this.startUrl,
       state,
     });
